@@ -1,0 +1,34 @@
+---
+ configure.ac    |    8 ++++----
+ man/Makefile.am |    2 +-
+ 2 files changed, 5 insertions(+), 5 deletions(-)
+
+--- a/man/Makefile.am
++++ b/man/Makefile.am
+@@ -11,7 +11,7 @@ man_MANS =					\
+ 	lou_tableinfo.1
+ endif
+ 
+-CLEANFILES = $(man_MANS)
++#CLEANFILES = $(man_MANS)
+ 
+ # The man pages depend on the --help strings and the version number.
+ common_mandeps = $(top_srcdir)/configure.ac
+--- a/configure.ac
++++ b/configure.ac
+@@ -124,11 +124,11 @@ AM_CONDITIONAL([HAVE_SOURCE_FORMATTER],
+ # this is sufficient, and obviates the need to maintain man pages
+ # separately. However, some developers do not have it so we do not
+ # make its use mandatory.
+-if test "x$cross_compiling" = xyes; then
+-  AC_MSG_WARN([cannot generate manual pages while cross compiling])
+-else
++#if test "x$cross_compiling" = xyes; then
++#  AC_MSG_WARN([cannot generate manual pages while cross compiling])
++#else
+   AC_CHECK_PROG([HELP2MAN], [help2man], [help2man])
+-fi
++#fi
+ AM_CONDITIONAL([HAVE_HELP2MAN], [test x$HELP2MAN = xhelp2man])
+ 
+ # Only run parts of the tests if we are cross compiling

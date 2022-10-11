@@ -1,0 +1,15 @@
+Depends: liblouis-bin
+Test-Command: [ "$(echo 'Hello, world!' | lou_translate --forward en-us-g2.ctb)" = ,hello1\ _w6 ]
+Restrictions: superficial
+
+Depends: liblouis-bin
+Test-Command: [ "$(echo 'Hello, world!' | lou_translate --forward unicode.dis,en-us-g2.ctb)" = ⠠⠓⠑⠇⠇⠕⠂\⠀⠸⠺⠖ ]
+Restrictions: superficial
+
+Depends: liblouis-bin
+Test-Command: [ "$(echo ",! qk br{n fox" | lou_translate --backward en-us-g2.ctb)" = The\ quick\ brown\ fox ]
+Restrictions: superficial
+
+Tests: tests
+Depends: liblouis-dev, liblouis-bin,
+         @builddeps@

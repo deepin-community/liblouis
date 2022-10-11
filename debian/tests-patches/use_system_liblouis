@@ -1,0 +1,82 @@
+---
+ tests/Makefile.am            |    4 +---
+ tests/check_all_tables.pl    |    2 +-
+ tests/check_endless_loop.pl  |    2 +-
+ tests/multiple_table_path.pl |    4 ++--
+ tools/Makefile.am            |    4 ++--
+ 5 files changed, 7 insertions(+), 9 deletions(-)
+
+--- a/tests/Makefile.am
++++ b/tests/Makefile.am
+@@ -8,7 +8,7 @@ AM_CPPFLAGS =					\
+ 	-I$(top_builddir)/tools
+ 
+ LDADD =							\
+-	$(top_builddir)/liblouis/liblouis.la		\
++	-llouis						\
+ 	$(top_builddir)/gnulib/libgnu.la		\
+ 	$(top_builddir)/tools/libbrlcheck.la		\
+ 	$(top_builddir)/tools/gnulib/libgnutools.la	\
+@@ -264,8 +264,6 @@ TESTS =				     \
+ AM_TESTS_ENVIRONMENT =								\
+ 	LOUIS_TABLEPATH=$(abs_top_srcdir)					\
+ 	UEB_TEST_DATA_PATH=$(top_srcdir)/tests/ueb_test_data			\
+-	LD_LIBRARY_PATH=$(top_builddir)/liblouis/.libs:$$LD_LIBRARY_PATH	\
+-	PATH=$(top_builddir)/tools:$$PATH					\
+ 	WINEPATH=$(top_builddir)/tools						\
+ 	WINE=$(WINE)								\
+ 	EXEEXT=$(EXEEXT)
+--- a/tools/Makefile.am
++++ b/tools/Makefile.am
+@@ -9,7 +9,7 @@ AM_CPPFLAGS =					\
+ lou_checkyaml_CPPFLAGS = $(AM_CPPFLAGS) $(YAML_CFLAGS)
+ 
+ LDADD =							\
+-	$(top_builddir)/liblouis/liblouis.la		\
++	-llouis						\
+ 	$(top_builddir)/tools/gnulib/libgnutools.la	\
+ 	libbrlcheck.la		\
+ 	$(LTLIBINTL)
+@@ -29,7 +29,7 @@ libbrlcheck_la_SOURCES =			\
+ # liblouis library. Otherwise we get missing symbol errors when
+ # compiling the test suite, which depends on libbrlcheck.
+ libbrlcheck_la_LIBADD =					\
+-	$(top_builddir)/liblouis/liblouis.la		\
++	-llouis						\
+ 	$(top_builddir)/tools/gnulib/libgnutools.la
+ 
+ lou_checkyaml_LDADD = $(LDADD) $(YAML_LIBS)
+--- a/tests/check_all_tables.pl
++++ b/tests/check_all_tables.pl
+@@ -37,7 +37,7 @@ foreach my $table (@tables) {
+     } else {
+ 	die "cannot fork: $!" unless defined($pid);
+ 	alarm $timeout;
+-	exec ("../tools/lou_checktable $table --quiet");
++	exec ("lou_checktable $table --quiet");
+ 	die "Exec of lou_checktable failed: $!";
+     }
+ }
+--- a/tests/check_endless_loop.pl
++++ b/tests/check_endless_loop.pl
+@@ -27,6 +27,6 @@ my $table="loop.ctb";
+ $SIG{ALRM} = sub { die "lou_checktable on $table stuck in endless loop\n" };
+ 
+ alarm 5;
+-system("../tools/lou_checktable $table --quiet") == 0 
++system("lou_checktable $table --quiet") == 0
+     or die "lou_checktable on $table failed\n";
+ alarm 0;
+--- a/tests/multiple_table_path.pl
++++ b/tests/multiple_table_path.pl
+@@ -56,8 +56,8 @@ my @tables = (
+ 
+ # ensure existing tables are found
+ foreach my $table (@tables) {
+-    system("../tools/lou_checktable $table --quiet") == 0 or die;
++    system("lou_checktable $table --quiet") == 0 or die;
+ }
+ 
+ # ensure a non-existing table is not found
+-system("../tools/lou_checktable nonexistent.ctb 2> /dev/null") != 0 or die;
++system("lou_checktable nonexistent.ctb 2> /dev/null") != 0 or die;

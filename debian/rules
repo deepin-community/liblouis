@@ -1,0 +1,56 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+
+%:
+	dh $@ $(DH_ADDONS)
+build binary %-indep: DH_ADDONS=--with=python3
+
+DOPACKAGES := $(shell dh_listpackages)
+ifeq ($(filter python3-louis,$(DOPACKAGES)),)
+PY3VERS :=
+else
+PY3VERS := $(shell py3versions -r)
+endif
+
+ASSUME_NEW = \
+	--assume-new=lou_allround.1 \
+	--assume-new=lou_checkhyphens.1 \
+	--assume-new=lou_checktable.1 \
+	--assume-new=lou_debug.1 \
+	--assume-new=lou_translate.1 \
+	--assume-new=lou_trace.1 \
+	--assume-new=lou_checkyaml.1 \
+	--assume-new=lou_tableinfo.1
+
+override_dh_auto_configure:
+ifneq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
+	dpkg-architecture -f -a$(DEB_BUILD_ARCH) -c dh_auto_configure -- --enable-ucs4
+	dpkg-architecture -f -a$(DEB_BUILD_ARCH) -c dh_auto_build
+	dh_auto_clean
+endif
+	dh_auto_configure -- --enable-ucs4
+
+override_dh_auto_build:
+	dh_auto_build -- $(ASSUME_NEW)
+	cd python; \
+	    for py in $(PY3VERS); do \
+		LD_LIBRARY_PATH=../liblouis/.libs$${LD_LIBRARY_PATH+:$$LD_LIBRARY_PATH} $$py setup.py build; \
+	    done
+
+override_dh_auto_clean:
+	dh_auto_clean
+	-cd python; \
+	    for py in $(PY3VERS); do \
+		LD_LIBRARY_PATH=../liblouis/.libs$${LD_LIBRARY_PATH+:$$LD_LIBRARY_PATH} $$py setup.py clean --all; \
+	    done; \
+	    rm -f louis/__init__.pyc
+	rm -f doc/liblouis.info doc/stamp-vti doc/version.texi
+	rm -fr python/build
+
+override_dh_auto_install:
+	dh_auto_install -- $(ASSUME_NEW)
+	cd python; \
+	    for py in $(PY3VERS); do \
+		LD_LIBRARY_PATH=../liblouis/.libs$${LD_LIBRARY_PATH+:$$LD_LIBRARY_PATH} $$py setup.py install --root=$(CURDIR)/debian/python3-louis --install-layout=deb; \
+	    done
+	rm -fr $(CURDIR)/debian/tmp/usr/bin/lou_maketable*

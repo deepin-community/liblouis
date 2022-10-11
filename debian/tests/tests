@@ -1,0 +1,16 @@
+#!/bin/sh
+
+set -e
+
+patch -p1 < debian/tests-patches/use_system_liblouis 2>&1
+
+dh_autoreconf 2>&1
+dh_auto_configure -- --enable-ucs4 2>&1
+
+make -C gnulib 2>&1
+make -C tools/gnulib 2>&1
+make -C tools libbrlcheck.la 2>&1
+make -C tests 2>&1
+make check -C tests || ( cat tests/test-suite.log ; false )
+
+patch -p1 -R < debian/tests-patches/use_system_liblouis
